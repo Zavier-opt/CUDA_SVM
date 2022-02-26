@@ -12,6 +12,7 @@
 ### GPU Implementation of SVM
 + GPUSVM: <https://github.com/niitsuma/gpusvm>
 + SVM CUDA implementation: <https://github.com/Site1997/SVM-Cuda>
++ LibSVM CUDA: <https://mklab.iti.gr/results/gpu-accelerated-libsvm/>
 
 ### Sequential Minimal Optimization
 + Original Paper (1998): <https://www.microsoft.com/en-us/research/publication/sequential-minimal-optimization-a-fast-algorithm-for-training-support-vector-machines/>
