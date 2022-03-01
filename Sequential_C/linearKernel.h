@@ -8,6 +8,7 @@ void linearKernel(float* x, float* y, float b, float* res) {
 			for (int k = 0; k < n; k++) {
 				res[i][j] += x[i][k] * y[j][k];
 			}
+			res[i][j] += b;
 		}
 	}
 }
