@@ -15,8 +15,9 @@ typedef struct {
 
 
 float normSquare(float* x, float* y, int col);
-void gaussianKernel(float** x, float* y, float sigma, float* res, int row, int col);
-void linearKernel(float** x, float* y, float b, float* res, int row, int col);
+float addVector(float* x, float* y, int col, float b);
+void gaussianKernel(float** x, float** y, float sigma, float** res, int rowX, int colX, int rowY, int colY);
+void linearKernel(float** x, float** y, float b, float** res, int rowX, int colX, int rowY, int colY);
 
 /*test function*/
 void testKernel();
