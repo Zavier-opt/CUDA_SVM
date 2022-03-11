@@ -30,6 +30,13 @@ Cambridge, MA, USA, 1999](https://www.microsoft.com/en-us/research/wp-content/up
 
 parallel SVM:
 
+Input:
+Model: C, gamma(rbf kernel)
+
+CUDA: num of blocks; num of thread in each block;
+
+Data: X, Y
+
 global memory: alpha_i
 shared memory： Xi，Yi，ei
 
@@ -51,3 +58,5 @@ step4: while(blo>bup+2*tao){
             
         }
 step9: return alpha
+
+Problem: kernel calculation;
