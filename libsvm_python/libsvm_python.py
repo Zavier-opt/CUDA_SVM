@@ -6,6 +6,8 @@ Created on Sat Feb 26 15:18:53 2022
 @author: dinglin
 """
 
+file_direct = '/Users/dinglin/Desktop/Operations Research/ISyE6679 Computational Methods/Final Project/Dataset/MUSK_training.csv'
+
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
@@ -22,8 +24,7 @@ def process_features(features_df):
             features[i].append(features_df.iloc[i,j])
     return features
 
-#ori_iris_data = pd.read_csv('/Users/dinglin/Desktop/Operations Research/ISyE6679 Computational Methods/Final Project/clean1.data', header=None)
-clean_iris_data = pd.read_csv('/Users/dinglin/Desktop/Operations Research/ISyE6679 Computational Methods/Final Project/Dataset/MUSK_training.csv',header=0)
+clean_iris_data = pd.read_csv(file_direct,header=0)
 labels = list(clean_iris_data.iloc[:,167])
 raw_features = clean_iris_data.iloc[:,1:167]
 features = process_features(raw_features)
