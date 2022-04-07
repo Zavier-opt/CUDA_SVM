@@ -1,9 +1,9 @@
-__global__ void smo_kernel(float* d_x, int* d_y, bool initial, int numOfData, int numOfAttr,float C ){
+__global__ void smo_kernel_initial(float *d_x, int *d_y, float *d_e, float *d_alpha, int *d_Iup, int *d_Ilow, int numOfData, int numOfAttr,float C ){
    if(initial){
        // value preparation
        float C_local = C;
        int index = blockIdx.x*blockDim.x+threadIdx.x;
-       __shared__ float x_data[blockDim.x*numOfAttr];
+       extern __shared__ float x_data[blockDim.x*numOfAttr];
        __shared__ int y_data[blockDim.x];
        __shared__ float e[blockDim.x];
        __shared__ float alpha[blockDim.x];
