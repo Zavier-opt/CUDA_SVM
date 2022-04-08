@@ -10,7 +10,7 @@ using namespace std;
 int main(){
     
     // In host, initialize a 2d matrix h_x (using a vector with size in numOfData*numOfAttr );
-    // parameters:
+    // Input parameters:
     float C = 0.1;
     float slack = 0.1;
     char kernel_function = "RBF";
@@ -24,6 +24,7 @@ int main(){
     vector<float> h_x (numOfData*numOfAttr);
     vector<int> h_y (numOfData);
     vector<float> h_e(numOfData);
+    vector<float> h_alpha(numOfData);
     vector<float> h_Iup(numOfData);
     vector<float> h_Ilow(numOfData);
     
@@ -59,12 +60,6 @@ int main(){
     cudaMemcpy(d_x, h_x.data(), bytesOfX, cudaMemcpyHostToDevice);
     cudaMemcpy(d_y, h_y.data(), bytesOfY, cudaMemcpyHostToDevice);
     
-    //
-    // test
-    // for(int i=0; i<h_y.size();i++){
-    //     cout<<h_y[i]<<",";
-    // }
-        // define num of threads and num of blocks
     int THREADS = 512;
     int BLOCKS;
     if(numOfData%THREADS==0){
@@ -85,6 +80,8 @@ int main(){
     int low=-1;
     int up=-1;
     findSupportVector(h_e, h_Ilow, h_Iup, &low, &up);
+    int  ;
+    int row_up;
 
     // Loop begin
     while(1){
@@ -96,23 +93,51 @@ int main(){
         // Go to device
         bool cal_low = true;
         bool cal_up = true;
-        int row_low = 0; // if cal_low/up is true, row_low/up return the posOfRow they should be
-        int row_up = 1;// if cal_low/up is false, row_low/up return the posOfRow they have been
+        row_low = 0; // if cal_low/up is true, row_low/up return the posOfRow they should be
+        row_up = 1;// if cal_low/up is false, row_low/up return the posOfRow they have been
       
-        calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_y, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,gamma);
+        calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_y, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,gamma,C);
         // 1. get kernel value
         // 2. compute alpha, e and Iup Ilow
 
-        // Back to host
-        
+        // Go Back to host
+        cudaMemcpy(h_e.data(), d_e, bytesOfe, cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_Ilow.data(),d_Ilow, bytesOfIlow, cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_Iup.data(),d_Iup, bytesOfIup, cudaMemcpyDeviceToHost);
+
+        // Find low, up vector
+        findSupportVector(h_e, h_Ilow, h_Iup, &low, &up);
 
     }
 
-    
+    // recieve results
+    cudaMemcpy(h_alpha.data(), d_alpha,bytesOfalpha,cudaMemcpyDeviceToHost);
+    vector<float> h_kerel_up(numOfData);
+    vector<float> h_kernel_low(numOfData);
+    float *d_kernel_up;
+    float *d_kernel_low;
+    size_t bytesOfSupportKernel = numOfData*sizeof(float);
+    cudaMalloc(&d_kernel_up,bytesOfSupportKernel);
+    cudaMalloc(&d_kernel_low,bytesOfSupportKernel);
+    write_kernel_to_memory<<BLOCKS,THREADS>>(d_kernel_up,d_kernel_low,row_up,row_low,kernel_value,numOfData);
+    cudaMemcpy(h_kerel_up.data(),d_kernel_up,bytesOfSupportKernel,cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_kernel_low.data(),d_kernel_low,bytesOfSupportKernel,cudaMemcpyDeviceToHost);
+ 
+    // Output results for prediction:
+    // low, up kernel values:   h_kerel_up, h_kernel_low;
+    // low, up support vector:  row_low, row_up;
+    // alhps:                   h_alpha;
+    // final group:             h_Ilow, h_Iup;
+
 
     // free memory
     cudaFree(d_x);
     cudaFree(d_y);
+    cudaFree(d_e);
+    cudaFree(d_alpha);
+    cudaFree(d_Iup);
+    cudaFree(d_Ilow);
+    cudaFree(kernel_value); 
     
 }
 
