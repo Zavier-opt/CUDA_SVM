@@ -14,7 +14,7 @@ __global__ void smo_kernel_initial(float *d_x, int *d_y, float *d_e, float *d_al
        
    }
 }
-__global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_value, float *d_x, float *d_e,float *d_alpha, int numOfData, int numOfAttr,bool cal_low, bool cal_up, int row_low, int row_up, char[] kernel_function, float gamma){
+__global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_value, float *d_x, int *d_y, float *d_e,float *d_alpha, int numOfData, int numOfAttr,bool cal_low, bool cal_up, int row_low, int row_up, char[] kernel_function, float gamma){
     int index = blockIdx.x*blockDim.x+threadIdx.x;
     if(index<numOfData){
         float local_x_data[numOfAttr];
@@ -32,7 +32,7 @@ __global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_val
             cal_put_kernel(local_x_data,local_up_data, numOfAttr,index,kernel_value,row_up,kernel_function, gamma);
         }
 
-        update_alpha_e(d_e,d_alpha,kernel_value,row_low,row_up,index);
+        update_alpha_e(d_e,d_alpha,d_y, kernel_value,row_low,row_up,index);
     }
 }
 __device__ void cal_put_kernel(float x[], float support_vector[], int numOfAttr, int index, float *kernel_value, int row_pos, char[] kernel_function, float gamma){
@@ -64,9 +64,10 @@ __device__ float LINEAR(float x[], float support_vector[], int numOfAttr){
     return sum;
 }
  
-__device__ void update_alpha_e(float *d_e,float *d_alpha, float *kernel_value, int row_low, int row_up, int index){
-    float low_kernel_value = 
-    float up_kernel_value =
+__device__ void update_alpha_e(float *d_e,float *d_alpha, int *d_y, float *kernel_value, int row_low, int row_up, int index){
+    if(index == row_up){
+
+    }
 }
 
 __device__ int divideGroup(int y, float alpha, float C, bool isUp){

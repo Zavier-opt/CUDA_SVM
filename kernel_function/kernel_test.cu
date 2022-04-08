@@ -99,7 +99,7 @@ int main(){
         int row_low = 0; // if cal_low/up is true, row_low/up return the posOfRow they should be
         int row_up = 1;// if cal_low/up is false, row_low/up return the posOfRow they have been
       
-        calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,gamma);
+        calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_y, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,gamma);
         // 1. get kernel value
         // 2. compute alpha, e and Iup Ilow
 
