@@ -13,6 +13,8 @@ int main(){
     // parameters:
     float C = 0.1;
     float slack = 0.1;
+    char kernel_function = "RBF";
+    float gamma = 0.01;
 
     // In host:
     int numOfData = 10;
@@ -44,7 +46,7 @@ int main(){
     size_t bytesOfalpha = numOfData*size(float);
     size_t bytesOfIup = numOfData*sizeof(int);
     size_t bytesOfIlow = numOfData*sizeof(int);
-    size_t bytesOfkernel_value = numOfData*numOfRowInKernel*sizeof(float);
+    size_t bytesOfkernel_value = numOfData*numOfRowInKernel*sizeof(float); // kernel value: [k1:[x1,x2,...],k2:[x1,x2,...]]
     cudaMalloc(&d_x, bytesOfX);    // cudaMalloc(void**, devPtr, size_t, size)
     cudaMalloc(&d_y, bytesOfY);
     cudaMalloc(&d_e, bytesOfe);
@@ -92,9 +94,13 @@ int main(){
             break;
         }
         // Go to device
-
+        bool cal_low = true;
+        bool cal_up = true;
+        int row_low = 0; // if cal_low/up is true, row_low/up return the posOfRow they should be
+        int row_up = 1;// if cal_low/up is false, row_low/up return the posOfRow they have been
+      
+        calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,gamma);
         // 1. get kernel value
-
         // 2. compute alpha, e and Iup Ilow
 
         // Back to host
