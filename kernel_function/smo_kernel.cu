@@ -3,24 +3,13 @@ __global__ void smo_kernel_initial(float *d_x, int *d_y, float *d_e, float *d_al
        // value preparation
        float C_local = C;
        int index = blockIdx.x*blockDim.x+threadIdx.x;
-       extern __shared__ float x_data[blockDim.x*numOfAttr];
-       __shared__ int y_data[blockDim.x];
-       __shared__ float e[blockDim.x];
-       __shared__ float alpha[blockDim.x];
-       __shared__ int Iup[blockDim.x];
-       __shared__ int Ilow[blockDim.x];
  
        // put data from global memory to shared memory
        if(index<numOfData){
-           for(int i=0;i<numOfAttr;i++){
-               x_data[numOfAttr*threadIdx.x+i] = d_x[numOfAttr*index+i];
-           }
-           y_data[threadIdx.x] = d_y[index];
-           e[threadIdx.x] = -y_data[threadIdx.x];
-           alpha[threadIdx.x] = 0;
-           Iup[threadIdx.x] = divideGroup(y_data[threadIdx.x], alpha[threadIdx.x], C_local,true); // true: detect up; false: detect low
-           Ilow[threadIdx.x] = divideGroup(y_data[threadIdx.x], alpha[threadIdx.x], C_local,false);// if it is up/low, the value is 1, otherwise 0;
- 
+           d_e[index] = -d_y[index];
+           d_alpha[index] = 0;
+           d_Iup[index] = divideGroup(d_y[index], alpha[index], C_local,true); // true: detect up; false: detect low
+           d_Ilow[index] = divideGroup(d_y[index], alpha[index], C_local,false);// if it is up/low, the value is 1, otherwise 0;
        }
  
    }
