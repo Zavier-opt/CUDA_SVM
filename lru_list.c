@@ -91,3 +91,56 @@ int sub_main(void) {
     printf("Not in the list: %d\n",data_faults_number);
     return 0;
 }
+
+void find_data(const int index, int &offset, bool &compute) {
+  std::vector<DirectoryEntry>::iterator iCurrentEntry = directory.begin() + index;
+  if (iCurrentEntry->status == DirectoryEntry::INCACHE) {
+    hits++;
+    if (iCurrentEntry->lruListEntry == lruList.begin()) {
+      offset = iCurrentEntry->location;
+      compute = false;
+      return;
+    }
+    lruList.erase(iCurrentEntry->lruListEntry);
+    lruList.push_front(index);
+    iCurrentEntry->lruListEntry = lruList.begin();
+    offset = iCurrentEntry->location;
+    compute = false;
+    return;
+  }
+
+  //Cache Miss
+  if (occupancy < cacheSize) {
+    //Cache has empty space
+    compulsoryMisses++;
+    iCurrentEntry->location = occupancy;
+    iCurrentEntry->status = DirectoryEntry::INCACHE;
+    lruList.push_front(index);
+    iCurrentEntry->lruListEntry = lruList.begin();
+    occupancy++;
+    offset = iCurrentEntry->location;
+    compute = true;
+    return;
+  }
+ 
+  //Cache is full
+  if (iCurrentEntry->status == DirectoryEntry::NEVER) {
+    compulsoryMisses++;
+  } else {
+    capacityMisses++;
+  }
+
+  int expiredPoint = lruList.back();
+  lruList.pop_back();
+ 
+  directory[expiredPoint].status = DirectoryEntry::EVICTED;
+  int expiredLine = directory[expiredPoint].location;
+  iCurrentEntry->status = DirectoryEntry::INCACHE;
+  iCurrentEntry->location = expiredLine;
+  lruList.push_front(index);
+  iCurrentEntry->lruListEntry = lruList.begin();
+
+  offset = iCurrentEntry->location;
+  compute = true;
+  return;
+}
