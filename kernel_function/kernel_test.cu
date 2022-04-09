@@ -14,7 +14,7 @@ int main(){
     float C = 0.1;
     float slack = 0.1;
     char kernel_function = "RBF";
-    float gamma = 0.01;
+    float Gamma = 0.01;
 
     // In host:
     int numOfData = 10;
@@ -80,7 +80,7 @@ int main(){
     int low=-1;
     int up=-1;
     findSupportVector(h_e, h_Ilow, h_Iup, &low, &up);
-    int  ;
+    int row_low;
     int row_up;
 
     // Loop begin
@@ -91,12 +91,17 @@ int main(){
             break;
         }
         // Go to device
+        // Need LRU function:
+        // Input: up, low (they are index of support vector);
+        // Output: 
+        // cal_low/up (whether we should calculate them)
+        // row_low/up (the index of row in kernel values matrix)
         bool cal_low = true;
         bool cal_up = true;
-        row_low = 0; // if cal_low/up is true, row_low/up return the posOfRow they should be
-        row_up = 1;// if cal_low/up is false, row_low/up return the posOfRow they have been
+        row_low = 0; // if cal_low/up is true, row_low/up is the posOfRow they should be
+        row_up = 1;// if cal_low/up is false, row_low/up is the posOfRow they have been
       
-        calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_y, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,gamma,C);
+        calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_y, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,Gamma,C);
         // 1. get kernel value
         // 2. compute alpha, e and Iup Ilow
 
@@ -129,6 +134,7 @@ int main(){
     // alhps:                   h_alpha;
     // final group:             h_Ilow, h_Iup;
 
+    // Next step: use parameters to make prediction
 
     // free memory
     cudaFree(d_x);
