@@ -1,5 +1,5 @@
 //
-//  read_csv.c
+//  main.c
 //  read_csv
 //
 //  Created by Dinglin Xia on 2/27/22.
@@ -9,17 +9,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define LONGLENGTH 1024
-#define BUFFERSIZE 10
+#define DATASIZE 2000
+#define FEATURENUM 2
 #define HEAD 1
 
 int main(int argc, const char * argv[]) {
     // Make the Declaration
-    char a[1024][2];
+    char a[DATASIZE][FEATURENUM];
     char* line_list,* ptr;
     char* p;
-    int N;
-    N = BUFFERSIZE;
+    //int N;
+    //N = BUFFERSIZE;
     p = 0;
     //char buffer[BUFFERSIZE], s[BUFFERSIZE];
     const char* delim = ",";
@@ -119,19 +119,27 @@ int main(int argc, const char * argv[]) {
         char delims[] = ",";
         char *result = NULL;
         int j = 0;
+        int i = 0;
+        float record_float;
         while ((line = fgets(buffer, sizeof(buffer), fp))!=NULL) {//当没有读取到文件末尾时循环继续{
                 record = strtok(line, ",");
                 while (record != NULL)//读取每一行的数据
                 {
                     if (strcmp(record, "Ps:") == 0)//当读取到Ps那一行时，不再继续读取
                         return 0;
-                    printf("%s \n", record);//将读取到的每一个数据打印出来
+                    printf("%i, %i, %s \n", i, j, record);//将读取到的每一个数据打印出来
+                    if (i>0 && j>0) {
+                        record_float = atof(record);
+                        a[i-1][j-1] = record_float;
+                        printf("%i, %i, %3f \n", i, j, record_float);
+                    }
                     if (j == 10)  //只需读取前9列
                         break;
                     record = strtok(NULL, ",");
                     j++;
                 }
                 printf("\n");
+                i++;
                 j = 0;
      
             }
@@ -141,13 +149,11 @@ int main(int argc, const char * argv[]) {
     
     fclose(fp);
     
-    
-    
-    printf("Hello, World!\n");
-    return 0;
-}
-    
-    
+    for (int i = 0; i < DATASIZE; i++){
+        for (int j = 0; j < FEATURENUM; j++){
+            printf("%i,%i,%f \n", i,j,a[i][j]);
+        }
+    }
     
     printf("Hello, World!\n");
     return 0;
