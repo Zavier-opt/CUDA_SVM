@@ -66,6 +66,33 @@ void create_node(int id_num) {
     p->id = id_num;
 }
 
+int push_id(int find_ID, int pos, struct node *head) {
+    int cur_pos = 0;
+    int return_pos = -1;
+    struct node *q;
+    q = head;
+    if (head->id == find_ID) {
+        return 0;
+    }
+    while (q->next != NULL) {
+        if (q->next->id == find_ID) {
+            return_pos = q->location;
+            q->next = q->next->next;
+            q->next->next = head->next;
+            head = q->next;
+            return return_pos;
+        }
+        q = q->next;
+        cur_pos += 1;
+    }
+    struct node *p = q;
+    p->id = find_ID;
+    p->location = pos;
+    p->next = NULL;
+    q->next = p;
+    return -1;
+}
+
 int sub_main(void) {
     int sum, n, data_faults_number;
     sum = 0;                        //初始cache内没有数据
