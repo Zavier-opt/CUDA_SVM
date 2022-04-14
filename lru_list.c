@@ -66,13 +66,13 @@ void create_node(int id_num) {
     p->id = id_num;
 }
 
-int push_id(int find_ID, int pos, struct node *head) {
+int push_id(int find_ID, struct node *head) {
     int cur_pos = 0;
     int return_pos = -1;
     struct node *q;
     q = head;
     if (head->id == find_ID) {
-        return 0;
+        return head->location;
     }
     while (q->next != NULL) {
         if (q->next->id == find_ID) {
@@ -85,12 +85,8 @@ int push_id(int find_ID, int pos, struct node *head) {
         q = q->next;
         cur_pos += 1;
     }
-    struct node *p = q;
-    p->id = find_ID;
-    p->location = pos;
-    p->next = NULL;
-    q->next = p;
-    return -1;
+    q->id = find_ID;
+    return q->location;
 }
 
 int sub_main(void) {
@@ -117,57 +113,4 @@ int sub_main(void) {
     }
     printf("Not in the list: %d\n",data_faults_number);
     return 0;
-}
-
-void find_data(const int index, int &offset, bool &compute) {
-  std::vector<DirectoryEntry>::iterator iCurrentEntry = directory.begin() + index;
-  if (iCurrentEntry->status == DirectoryEntry::INCACHE) {
-    hits++;
-    if (iCurrentEntry->lruListEntry == lruList.begin()) {
-      offset = iCurrentEntry->location;
-      compute = false;
-      return;
-    }
-    lruList.erase(iCurrentEntry->lruListEntry);
-    lruList.push_front(index);
-    iCurrentEntry->lruListEntry = lruList.begin();
-    offset = iCurrentEntry->location;
-    compute = false;
-    return;
-  }
-
-  //Cache Miss
-  if (occupancy < cacheSize) {
-    //Cache has empty space
-    compulsoryMisses++;
-    iCurrentEntry->location = occupancy;
-    iCurrentEntry->status = DirectoryEntry::INCACHE;
-    lruList.push_front(index);
-    iCurrentEntry->lruListEntry = lruList.begin();
-    occupancy++;
-    offset = iCurrentEntry->location;
-    compute = true;
-    return;
-  }
- 
-  //Cache is full
-  if (iCurrentEntry->status == DirectoryEntry::NEVER) {
-    compulsoryMisses++;
-  } else {
-    capacityMisses++;
-  }
-
-  int expiredPoint = lruList.back();
-  lruList.pop_back();
- 
-  directory[expiredPoint].status = DirectoryEntry::EVICTED;
-  int expiredLine = directory[expiredPoint].location;
-  iCurrentEntry->status = DirectoryEntry::INCACHE;
-  iCurrentEntry->location = expiredLine;
-  lruList.push_front(index);
-  iCurrentEntry->lruListEntry = lruList.begin();
-
-  offset = iCurrentEntry->location;
-  compute = true;
-  return;
 }
