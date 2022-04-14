@@ -66,12 +66,13 @@ void create_node(int id_num) {
     p->id = id_num;
 }
 
-int push_id(int find_ID, struct node *head) {
+int push_id(int find_ID, struct node *head, int *cal_bool) {
     int cur_pos = 0;
     int return_pos = -1;
     struct node *q;
     q = head;
     if (head->id == find_ID) {
+        *cal_bool = true;
         return head->location;
     }
     while (q->next != NULL) {
@@ -80,12 +81,14 @@ int push_id(int find_ID, struct node *head) {
             q->next = q->next->next;
             q->next->next = head->next;
             head = q->next;
+            *cal_bool = true;
             return return_pos;
         }
         q = q->next;
         cur_pos += 1;
     }
     q->id = find_ID;
+    *cal_bool = false;
     return q->location;
 }
 

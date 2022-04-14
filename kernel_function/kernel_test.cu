@@ -115,13 +115,14 @@ int main(){
         // row_low/up (the index of row in kernel values matrix)
         bool cal_low = true;
         bool cal_up = true;
-        row_low = 0; // if cal_low/up is true, row_low/up is the posOfRow they should be
-        row_up = 1;// if cal_low/up is false, row_low/up is the posOfRow they have been
+        //row_low = 0; // if cal_low/up is true, row_low/up is the posOfRow they should be
+        //row_up = 1;// if cal_low/up is false, row_low/up is the posOfRow they have been
+        row_low = push_id(low, head, &cal_low);
+        row_up = push_id(up, head, &cal_up);
       
         calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_y, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,Gamma,C);
         // 1. get kernel value
-        int low_index = push_id(low, head);
-        int up_index = push_id(up, head);
+        
         // 2. compute alpha, e and Iup Ilow
 
         // Go Back to host
