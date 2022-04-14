@@ -4,6 +4,8 @@
 #include <iostream>
 #include "smo_kernel.cu"
 #include "helper.cu"
+#include "lru_list.c"
+#include "lru_list.h"
 
 using namespace std;
     
