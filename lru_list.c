@@ -19,17 +19,18 @@ struct node
     int location;
     struct node *next;
 } * head, *tail, *p;
-*/
+
 
 void PushBack(void) {
     /*
     pre没有意义，仅需要多保留一个尾结点
     p->pre = tail; //使pre指向前一个节点，循环可得到反向链表
-    */
+    
     p->next = NULL;
     tail->next = p;
     tail = p;
 }
+
 
 void fun(int n, int *sum, int *page_faults_number) {
     struct node *q;
@@ -61,10 +62,12 @@ void fun(int n, int *sum, int *page_faults_number) {
     free(p);
 }
 
+
 void create_node(int id_num) {
     p = (struct node *)malloc(sizeof(struct node));
     p->id = id_num;
 }
+*/
 
 int push_id(int find_ID, struct node *head, int *cal_bool) {
     int cur_pos = 0;
@@ -92,6 +95,7 @@ int push_id(int find_ID, struct node *head, int *cal_bool) {
     return q->location;
 }
 
+/*
 int sub_main(void) {
     int sum, n, data_faults_number;
     sum = 0;                        //初始cache内没有数据
@@ -117,3 +121,4 @@ int sub_main(void) {
     printf("Not in the list: %d\n",data_faults_number);
     return 0;
 }
+*/
