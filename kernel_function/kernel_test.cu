@@ -108,10 +108,10 @@ int main(){
         // Output: 
         // cal_low/up (whether we should calculate them)
         // row_low/up (the index of row in kernel values matrix)
-        bool cal_low = true;
-        bool cal_up = true;
         //row_low = 0; // if cal_low/up is true, row_low/up is the posOfRow they should be
         //row_up = 1;// if cal_low/up is false, row_low/up is the posOfRow they have been
+        bool cal_low = true;
+        bool cal_up = true;
         row_low = push_id(low, head, &cal_low);
         row_up = push_id(up, head, &cal_up);
       
