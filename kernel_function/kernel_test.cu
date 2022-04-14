@@ -4,8 +4,13 @@
 #include <iostream>
 #include "smo_kernel.cu"
 #include "helper.cu"
+<<<<<<< HEAD
 #include "lru_list.c"
 #include "lru_list.h"
+=======
+#include "lru_list.h"
+#include "lru_list.c"
+>>>>>>> ac7229360f697b27f865c814d60e386064cc746b
 
 using namespace std;
     
@@ -30,6 +35,9 @@ int main(){
     vector<float> h_Iup(numOfData);
     vector<float> h_Ilow(numOfData);
     
+    // Initialize LRU List
+    head = (struct node *)malloc(sizeof(struct node));
+    head->next = NULL;
     
     // initialize h_x, h_y
     generate(h_x.begin(), h_x.end(), [](){return rand()%100;});
@@ -82,6 +90,13 @@ int main(){
     int low=-1;
     int up=-1;
     findSupportVector(h_e, h_Ilow, h_Iup, &low, &up);
+    // First two nodes in LRU list
+    second = (struct node *)malloc(sizeof(struct node));
+    head->id = low;
+    head->next = second;
+    second->id = up;
+    second->next = NULL;
+    
     int row_low;
     int row_up;
 
@@ -105,6 +120,8 @@ int main(){
       
         calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_y, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,Gamma,C);
         // 1. get kernel value
+        int low_index = push_id(low, head);
+        int up_index = push_id(up, head);
         // 2. compute alpha, e and Iup Ilow
 
         // Go Back to host
