@@ -1,8 +1,8 @@
-#include "string.h"
 #include "math.h"
 __global__ void smo_kernel_initial(float *d_x, int *d_y, float *d_e, float *d_alpha, int *d_Iup, int *d_Ilow, int numOfData, int numOfAttr,float C);
-__global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_value, float *d_x, int *d_y, float *d_e,float *d_alpha, int *d_Iup, int *d_Ilow, int numOfData, int numOfAttr,bool cal_low, bool cal_up, int row_low, int row_up, char kernel_function_name[3], float Gamma, float C);
-__device__ void cal_put_kernel(float x[], float support_vector[], int numOfAttr, int index, float *kernel_value, int row_pos, char kernel_function_name[3], float Gamma);
+__global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_value, float *d_x, int *d_y, float *d_e,float *d_alpha, int *d_Iup, int *d_Ilow, int numOfData, int numOfAttr,bool cal_low, bool cal_up, int row_low, int row_up, char kernel_function_name[4], float Gamma, float C);
+__device__ void cal_put_kernel(float x[], float support_vector[], int numOfAttr,int numOfData, int index, float *kernel_value, int row_pos, char kernel_function_name[4], float Gamma);
+__device__ bool check(char name[4], char kernel_function_name[4]);
 __device__ float RBF(float x[], float support_vector[],int numOfAttr,float Gamma);
 __device__ float LINEAR(float x[], float support_vector[], int numOfAttr);
 __device__ void update_alpha_e(float *d_e,float *d_alpha, int *d_y, float *kernel_value, int row_low, int row_up, int index, int numOfData);
@@ -25,16 +25,12 @@ __global__ void smo_kernel_initial(float *d_x, int *d_y, float *d_e, float *d_al
        
    }
 }
-__global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_value, float *d_x, int *d_y, float *d_e,float *d_alpha, int *d_Iup, int *d_Ilow, int numOfData, int numOfAttr,bool cal_low, bool cal_up, int row_low, int row_up, char kernel_function_name[3], float Gamma, float C){
+__global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_value, float *d_x, int *d_y, float *d_e,float *d_alpha, int *d_Iup, int *d_Ilow, int numOfData, int numOfAttr,bool cal_low, bool cal_up, int row_low, int row_up, char kernel_function_name[4], float Gamma, float C){
     int index = blockIdx.x*blockDim.x+threadIdx.x;
     if(index<numOfData){
-        float *local_x_data=NULL;
-        float *local_low_data=NULL;
-        float *local_up_data=NULL;
-        size_t size = numOfAttr*sizeof(float);
-        cudaMalloc((void**)&local_x_data,size);
-        cudaMalloc((void**)&local_low_data,size);
-        cudaMalloc((void**)&local_up_data,size);
+        float local_x_data[256];
+        float local_low_data[256];
+        float local_up_data[256];
         float C_local = C;
         for(int i=0;i<numOfAttr;i++){
             local_x_data[i] = d_x[index*numOfAttr+i];
@@ -42,10 +38,10 @@ __global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_val
             local_up_data[i] = d_x[up*numOfAttr+i];
         }
         if(cal_low){
-            cal_put_kernel(local_x_data,local_low_data, numOfAttr,index,kernel_value,row_low,kernel_function_name, Gamma);
+            cal_put_kernel(local_x_data,local_low_data, numOfAttr,numOfData,index,kernel_value,row_low,kernel_function_name, Gamma);
         }
         if(cal_up){
-            cal_put_kernel(local_x_data,local_up_data, numOfAttr,index,kernel_value,row_up,kernel_function_name, Gamma);
+            cal_put_kernel(local_x_data,local_up_data, numOfAttr,numOfData,index,kernel_value,row_up,kernel_function_name, Gamma);
         }
         update_alpha_e(d_e,d_alpha,d_y, kernel_value,row_low,row_up,index, numOfData);
 
@@ -53,19 +49,27 @@ __global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_val
         d_Ilow[index] = divideGroup(d_y[index], d_alpha[index], C_local,false);// the value is 1 or 0;
     }
 }
-__device__ void cal_put_kernel(float x[], float support_vector[], int numOfAttr, int index, float *kernel_value, int row_pos, char kernel_function_name[3], float Gamma){
-    char rbf[3] = "RBF";
-    char lin[3] = "LIN";
+__device__ void cal_put_kernel(float x[], float support_vector[], int numOfAttr,int numOfData, int index, float *kernel_value, int row_pos, char kernel_function_name[4], float Gamma){
+    char rbf[4] = "RBF";
+    char lin[4] = "LIN";
     float value;
-    if(strcmp(rbf,kernel_function_name)==0){
-        value = RBF(x,support_vector,numOfAttr,gamma);
+    if(check(rbf,kernel_function_name)){
+        value = RBF(x,support_vector,numOfAttr,Gamma);
     }else{
         value = LINEAR(x,support_vector,numOfAttr);
     }
     kernel_value[row_pos*numOfData+index]=value;
 
 }
-
+__device__ bool check(char name[4], char kernel_function_name[4]){
+    bool res = true;
+    for(int i=0;i<4;i++){
+        if(name[i]!=kernel_function_name[i]){
+            res = false;
+        }
+    }
+    return res;
+}
 __device__ float RBF(float x[], float support_vector[],int numOfAttr,float Gamma){
     float sum = 0;
     for(int i=0;i<numOfAttr;i++){
@@ -137,6 +141,6 @@ __global__ void write_kernel_to_memory(float *d_kernel_up, float *d_kernel_low, 
     int index = blockIdx.x*blockDim.x+threadIdx.x;
     if(index<numOfData){
         d_kernel_up[index]=kernel_value[row_up*numOfData+index];
-        d_kernel_low[index]=kernel_value[row_low*numOfData+index]
+        d_kernel_low[index]=kernel_value[row_low*numOfData+index];
     }
 }

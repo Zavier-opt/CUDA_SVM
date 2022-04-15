@@ -1,4 +1,7 @@
 #include<float.h>
+#include <vector>
+
+using namespace std;
 
 void findSupportVector(vector<float> &h_e, vector<int> &h_Ilow,vector<int> &h_Iup,int *low, int *up){
     double min = DBL_MAX;
@@ -10,7 +13,7 @@ void findSupportVector(vector<float> &h_e, vector<int> &h_Ilow,vector<int> &h_Iu
                 *low = i;
             }
         }
-        if(h_Iup==1){ // it is in up group
+        if(h_Iup[i]==1){ // it is in up group
             if(h_e[i]<min){
                 min = h_e[i];
                 *up = i;
