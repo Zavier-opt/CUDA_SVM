@@ -15,7 +15,7 @@ int main(){
     // Input parameters:
     float C = 0.1;
     float slack = 0.1;
-    char kernel_function = "RBF";
+    char kernel_function_name[3] = "RBF";
     float Gamma = 0.01;
 
     // In host:
@@ -115,7 +115,7 @@ int main(){
         row_low = push_id(low, head, &cal_low);
         row_up = push_id(up, head, &cal_up);
       
-        calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_y, d_e, d_alpha, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function,Gamma,C);
+        calculate_kernel_update_alpha<<BLOCKS, THREADS>>(low, up, kernel_value,d_x, d_y, d_e, d_alpha,d_Iup, d_Ilow, numOfData,numOfAttr, cal_low,cal_up,row_low,row_up,kernel_function_name,Gamma,C);
         // 1. get kernel value
         
         // 2. compute alpha, e and Iup Ilow
