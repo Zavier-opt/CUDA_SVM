@@ -34,7 +34,6 @@ int main(){
     head = (struct node *)malloc(sizeof(struct node));
     head->next = NULL;
     
-    // initialize h_x, h_y
     generate(h_x.begin(), h_x.end(), [](){return rand()%100;});
     generate(h_y.begin(), h_y.end(), [](){return (rand()%2)*2-1;});
     
@@ -47,7 +46,7 @@ int main(){
     int *d_Iup;
     int *d_Ilow;
     float *kernel_value;
-    int numOfRowInKernel = 500;
+    int numOfRowInKernel = LRUSIZE;
     size_t bytesOfe = numOfData*sizeof(float);
     size_t bytesOfalpha = numOfData*sizeof(float);
     size_t bytesOfIup = numOfData*sizeof(int);
@@ -73,18 +72,26 @@ int main(){
         BLOCKS = (int)numOfData/THREADS+1;
     }
 
+    // for(int i=0;i<numOfData;i++){
+    //     cout<<d_e[i]<<endl;
+    // }   
+
     // Go to device, Initial value
     smo_kernel_initial<<<BLOCKS, THREADS>>>(d_x,d_y,d_e, d_alpha,d_Iup, d_Ilow, numOfData,numOfAttr, C);
-    
+
     // Back to host
     cudaMemcpy(h_e.data(), d_e, bytesOfe, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_Ilow.data(),d_Ilow, bytesOfIlow, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_Iup.data(),d_Iup, bytesOfIup, cudaMemcpyDeviceToHost);
     
+
      // Find low, up vector
     int low=-1;
     int up=-1;
     findSupportVector(h_e, h_Ilow, h_Iup, &low, &up);
+
+
+
     // First two nodes in LRU list
     struct node* second = (struct node *)malloc(sizeof(struct node));
     head->id = low;
@@ -97,6 +104,7 @@ int main(){
 
     // Loop begin
     while(1){
+        //cout<<1<<endl;
         float bup = h_e[up];
         float blow = h_e[low];
         if(blow<=bup+2*slack){
@@ -152,15 +160,22 @@ int main(){
     // Next step: use parameters to make prediction
 
     // free memory
-    cout<<"kernel up:"<<endl;
-    for(int i=0;i<numOfData;i++){
-        cout<<h_kerel_up[i]<<endl;
-    }
-    cout<<"\n";
-    cout<<"kernel up:"<<endl;
-    for(int i=0;i<numOfData;i++){
-        cout<<h_kerel_up[i]<<endl;
-    }
+
+    // cout<<"h_alpha:"<<endl;
+    // for(int i=0;i<numOfData;i++){
+    //     cout<<h_alpha[i]<<endl;
+    // }
+
+    // cout<<"kernel up:"<<endl;
+    // for(int i=0;i<numOfData;i++){
+    //     cout<<h_kerel_up[i]<<endl;
+    // }
+    // cout<<"\n";
+    // cout<<"kernel up:"<<endl;
+    // for(int i=0;i<numOfData;i++){
+    //     cout<<h_kerel_up[i]<<endl;
+    // }
+
     cudaFree(d_x);
     cudaFree(d_y);
     cudaFree(d_e);
