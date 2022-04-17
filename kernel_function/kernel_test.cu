@@ -6,8 +6,10 @@
 #include "helper.cu"
 #include "lru_list.cu"
 #include "lru_list.h"
+//#include "support.h"
 
 using namespace std;
+
     
 int main(){
     
@@ -36,8 +38,7 @@ int main(){
     
     generate(h_x.begin(), h_x.end(), [](){return rand()%100;});
     generate(h_y.begin(), h_y.end(), [](){return (rand()%2)*2-1;});
-    
-    
+        
     // In device, allocate memory to device, transform from host to device
     float *d_x;
     int *d_y;
@@ -52,7 +53,12 @@ int main(){
     size_t bytesOfIup = numOfData*sizeof(int);
     size_t bytesOfIlow = numOfData*sizeof(int);
     size_t bytesOfkernel_value = numOfData*numOfRowInKernel*sizeof(float); // kernel value: [k1:[x1,x2,...],k2:[x1,x2,...]]
-    cudaMalloc(&d_x, bytesOfX);    // cudaMalloc(void**, devPtr, size_t, size)
+    // cudaError_t cuda_ret;
+    // cuda_ret = cudaMalloc(&d_x, bytesOfX);    // cudaMalloc(void**, devPtr, size_t, size)
+    // if(cuda_ret!=cudaSuccess){
+    //     cout<<"wrong"<<endl;
+    // }
+    cudaMalloc(&d_x, bytesOfX);
     cudaMalloc(&d_y, bytesOfY);
     cudaMalloc(&d_e, bytesOfe);
     cudaMalloc(&d_alpha, bytesOfalpha);
@@ -70,20 +76,23 @@ int main(){
         BLOCKS = (int)numOfData/THREADS;
     }else{
         BLOCKS = (int)numOfData/THREADS+1;
-    }
+    } 
 
-    // for(int i=0;i<numOfData;i++){
-    //     cout<<d_e[i]<<endl;
-    // }   
-
+    cudaDeviceSynchronize();
     // Go to device, Initial value
     smo_kernel_initial<<<BLOCKS, THREADS>>>(d_x,d_y,d_e, d_alpha,d_Iup, d_Ilow, numOfData,numOfAttr, C);
+    cudaDeviceSynchronize();
+
+
 
     // Back to host
     cudaMemcpy(h_e.data(), d_e, bytesOfe, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_Ilow.data(),d_Ilow, bytesOfIlow, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_Iup.data(),d_Iup, bytesOfIup, cudaMemcpyDeviceToHost);
     
+    for(int i=0;i<numOfData;i++){
+        cout<<h_e[i]<<endl;
+    }  
 
      // Find low, up vector
     int low=-1;

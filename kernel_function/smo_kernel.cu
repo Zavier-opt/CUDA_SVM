@@ -1,5 +1,6 @@
 #include "math.h"
 #include <stdio.h>
+
 __global__ void smo_kernel_initial(float *d_x, int *d_y, float *d_e, float *d_alpha, int *d_Iup, int *d_Ilow, int numOfData, int numOfAttr,float C);
 __global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_value, float *d_x, int *d_y, float *d_e,float *d_alpha, int *d_Iup, int *d_Ilow, int numOfData, int numOfAttr,bool cal_low, bool cal_up, int row_low, int row_up, char kernel_function_name[4], float Gamma, float C);
 __device__ void cal_put_kernel(float x[], float support_vector[], int numOfAttr,int numOfData, int index, float *kernel_value, int row_pos, char kernel_function_name[4], float Gamma);
@@ -16,14 +17,14 @@ __global__ void smo_kernel_initial(float *d_x, int *d_y, float *d_e, float *d_al
     // value preparation
     float C_local = C;
     int index = blockIdx.x*blockDim.x+threadIdx.x;
-    //printf("%d",index);
+    printf("Hello, world");
     // put data from global memory to shared memory
     if(index<numOfData){
         d_e[index] = -d_y[index];
         d_alpha[index] = 0;
         d_Iup[index] = divideGroup(d_y[index], d_alpha[index], C_local,true); // true: detect up; false: detect low
         d_Ilow[index] = divideGroup(d_y[index], d_alpha[index], C_local,false);// the value is 1 or 0;
-       
+        //printf("%d ",index);
    }
 }
 __global__ void calculate_kernel_update_alpha(int low, int up, float *kernel_value, float *d_x, int *d_y, float *d_e,float *d_alpha, int *d_Iup, int *d_Ilow, int numOfData, int numOfAttr,bool cal_low, bool cal_up, int row_low, int row_up, char kernel_function_name[4], float Gamma, float C){
