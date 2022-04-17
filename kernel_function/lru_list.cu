@@ -22,10 +22,7 @@ struct node
 */
 
 void PushBack(void) {
-    /*
-    pre没有意义，仅需要多保留一个尾结点
-    p->pre = tail; //使pre指向前一个节点，循环可得到反向链表
-    */
+
     p->next = NULL;
     tail->next = p;
     tail = p;
@@ -36,26 +33,26 @@ void fun(int n, int *sum, int *page_faults_number) {
     q = head;
     while (q->next != NULL)
     {
-        if (q->next->id == p->id)//不缺页
+        if (q->next->id == p->id)
         {
             PushBack();
             p = q->next;
             q->next = p->next;
             free(p);
-            return; //执行完全部操作停掉
+            return; 
         }
         q = q->next;
     }
     printf("Not in the list %d\n",p->id);
     *page_faults_number +=1;
     PushBack();
-    if (*sum < n) //cache未满，放至后面
+    if (*sum < n) 
     {
-        *sum += 1; //并对cache+1
+        *sum += 1; 
         printf("sun: %d", *sum);
         return;
     }
-    //cache满,释放下最后一个节点
+
     p = head->next;
     head->next = p->next;
     free(p);
@@ -94,9 +91,9 @@ int push_id(int find_ID, struct node *head, bool *cal_bool) {
 
 int sub_main(void) {
     int sum, n, data_faults_number;
-    sum = 0;                        //初始cache内没有数据
-    data_faults_number = 0;         //缺页次数清空
-    //scanf("%d", &n); //读入页数
+    sum = 0;                      
+    data_faults_number = 0;        
+
     n = LRUSIZE;
     head = (struct node *)malloc(sizeof(struct node));
     head->next = NULL;

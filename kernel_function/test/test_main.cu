@@ -12,5 +12,5 @@ int main()
 { 
   myKernel<<<1,10>>>(); 
   cudaDeviceSynchronize();
-  cout<<1<<endl;
+
 } 
